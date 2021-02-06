@@ -25,10 +25,10 @@
 //The draw rate, do not change unless you know what you are doing!
 #define DRAW_DELAY   20
 
-static const char *ssid =  "Banana";     // replace with your wifi ssid and wpa2 key
-static const char *pass =  "fruit4336";
-const IPAddress ip(192, 168, 3, 6);  //the IP address of the device
+static const char *ssid =  "your_wifi";     // replace with your wifi ssid and wpa2 key
+static const char *pass =  "your_password";
+const IPAddress ip(192, 168, 1, 6);  //the IP address of the device
 const IPAddress gateway(192, 168, 1, 1); //the gateway
-const IPAddress subnet(255, 255, 0, 0); //the subnet
+const IPAddress subnet(255, 255, 255, 0); //the subnet
 
 #endif /* USERSETTINGS_H_ */
