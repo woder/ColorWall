@@ -17,12 +17,14 @@ enum class Effects : uint8_t {
 	Solid,
 	Colory,
 	Wash,
+	Rainbow,
 	Last
 };
 
 struct PanelSettings {
 	uint8_t panelId;
 	uint8_t hue;
+	uint8_t sat;
 	uint8_t brightness;
 };
 struct EffectSettings {

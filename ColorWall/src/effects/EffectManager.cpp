@@ -20,6 +20,10 @@ void EffectManager::setDefaults(uint8_t effectId, EffectSettings& settings) {
 			break;
 		case Effects::Bpm:
 			Bpm::setDefaults(settings);
+			break;
+		case Effects::Rainbow:
+			Rainbow::setDefaults(settings);
+			break;
 	}
 }
 
@@ -37,6 +41,8 @@ void EffectManager::updateSettings(uint8_t effectId, DynamicJsonDocument& root, 
 		case Effects::Bpm:
 			Bpm::updateSettings(root, set);
 			break;
+		case Effects::Rainbow:
+			Rainbow::updateSettings(root, set);
 	}
 }
 

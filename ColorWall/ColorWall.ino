@@ -1,15 +1,8 @@
 #define FASTLED_INTERRUPT_RETRY_COUNT 0
 
 #include <FastLED.h>
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
 #include "Panel.h"
 #include "Settings.h"
-//#include "effects/Solid.h"
-//#include "effects/Wash.h"
-//#include "effects/Smooth.h"
-//#include "effects/Colory.h"
-//#include "effects/Bpm.h"
 
 FASTLED_USING_NAMESPACE
 
@@ -19,21 +12,32 @@ FASTLED_USING_NAMESPACE
 
 #define FRAMES_PER_SECOND  200
 
+/**
+ * Color wall - a software project designed to control DIY light panels
+ * Supports multiple effects and provides a JSON HTTP API for control
+ * Follow the guide at <url here>
+ *
+ * Be sure to edit UserSettings.h to match your desired settings! Many features will not work
+ * unless they are set correctly. This code has been tested with the ESP8266 and currently
+ * no other platforms. If you would like to confirm that an additional platform works, leave a comment
+ * on the previously linked guide!
+ *
+ * Required libraries:
+ * FastLED @ v3.4.0
+ * Vector @ 1.2.0
+ *
+ */
+
 CRGB leds[NUM_LEDS];
 Panel *panels[NUM_PANELS];
-
-const char *ssid =  "Banana";     // replace with your wifi ssid and wpa2 key
-const char *pass =  "fruit4336";
-ESP8266WebServer server ( 80 ); //the port to run the HTTP server
-IPAddress ip(192, 168, 3, 6);  //the IP address of the device
-IPAddress gateway(192, 168, 1, 1); //the gateway
-IPAddress subnet(255, 255, 0, 0); //the subnet
 
 Settings settings;
 Effect *currentEffect = new Solid(panels, leds);
 
+ESP8266WebServer server ( 80 ); //the port to run the HTTP server
+
 unsigned long previousMillis = 0;
-bool powered = true;
+uint8_t currentBrightness = 255;
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
@@ -41,11 +45,7 @@ void setup() {
   delay(3000); // 3 second delay for recovery
 
   Serial.begin(115200);
-  while(!Serial) {
-	  //wait
-  }
 
-  //uncomment for WiFi
   WiFi.mode(WIFI_STA);
   WiFi.config(ip, gateway, subnet);
   WiFi.begin(ssid, pass);
@@ -76,13 +76,13 @@ void setup() {
 	  start += NUM_LEDS_PER_PANEL;
   }
 
-  // set master brightness control
-  FastLED.setBrightness(BRIGHTNESS);
-  FastLED.setMaxPowerInVoltsAndMilliamps(5,  4700);
-
   //load the settings
   settings.loadSettings();
   setEffect(settings.getCurrentEffect());
+
+  // set master brightness control
+  FastLED.setBrightness(settings.getBrightness());
+  FastLED.setMaxPowerInVoltsAndMilliamps(5,  4700);
 
 
   server.on("/effect", HTTPMethod::HTTP_POST, handleSetEffect);
@@ -102,7 +102,7 @@ void loop() {
 
 	unsigned long currentMillis = millis();
 
-	if(powered) {
+	if(settings.isPowered()) {
 		if(currentMillis - previousMillis >= DRAW_DELAY) {
 			previousMillis = currentMillis;
 
@@ -110,8 +110,6 @@ void loop() {
 
 			// send the 'leds' array out to the actual LED strip
 			FastLED.show();
-			// insert a delay to keep the framerate modest
-			//FastLED.delay(1000/FRAMES_PER_SECOND);
 		}
 	} else {
 		memset8( leds, 0, NUM_LEDS * sizeof(CRGB));
@@ -141,6 +139,8 @@ void setEffect(uint8_t effectNum) {
 		case Effects::Wash:
 			currentEffect = new Wash(panels, leds, settings.getEffects().at(static_cast<int>(Effects::Wash)));
 			break;
+		case Effects::Rainbow:
+			currentEffect = new Rainbow(panels, leds, settings.getEffects().at(static_cast<int>(Effects::Rainbow)));
 	}
 
 }
@@ -181,14 +181,17 @@ void handleSetPower() {
         return;
 	}
 
-	powered = root["power"];
+	settings.setPowered(root["power"]);
+	settings.setBrightness(root["brightness"]);
+	FastLED.setBrightness(settings.getBrightness());
 
 	server.send(200, "text/plain", "OK");
 }
 
 void handleGetPower() {
 	StaticJsonDocument<200> root;
-	root["power"] = powered;
+	root["power"] = settings.isPowered();
+	root["brightness"] = settings.getBrightness();
 
 	String output;
 	serializeJson(root, output);
@@ -203,7 +206,7 @@ void handleSetPanels() {
 	}
 
 	String payload = server.arg("plain");
-	const size_t capacity = JSON_OBJECT_SIZE(3*NUM_PANELS) + JSON_ARRAY_SIZE(NUM_PANELS) + 60;
+	const size_t capacity = JSON_OBJECT_SIZE(4*NUM_PANELS) + JSON_ARRAY_SIZE(NUM_PANELS) + 60;
 	DynamicJsonDocument root(capacity);
 
 	auto error = deserializeJson(root, payload);
@@ -218,20 +221,27 @@ void handleSetPanels() {
 		int id = value["id"];
 		uint8_t hue = value["hue"];
 		JsonVariant b = value["brightness"];
+		JsonVariant s = value["saturation"];
 
 		if(id > ARRAY_SIZE(panels)) {
 			server.send(400, "text/plain", "ID above maximum panel number!");
 			return;
 		}
 
-		PanelSettings p = settings.getPanels().at(id);
+		PanelSettings *p = &settings.getPanels().at(id);
 		if(!b.isNull()) {
 			uint8_t brightness = b.as<uint8_t>();
-			p.brightness = brightness;
+			p->brightness = brightness;
 			panels[id]->setBrightness(brightness);
 		}
 
-		p.hue = hue;
+		if(!s.isNull()) {
+			uint8_t sat = s.as<uint8_t>();
+			p->sat = sat;
+			panels[id]->setSat(sat);
+		}
+
+		p->hue = hue;
 		panels[id]->setHue(hue);
 	}
 
@@ -242,13 +252,15 @@ void handleSetPanels() {
 }
 
 void handleGetPanels() {
-	const size_t capacity = JSON_OBJECT_SIZE(3*NUM_PANELS) + JSON_ARRAY_SIZE(NUM_PANELS) + 60;
+	const size_t capacity = JSON_OBJECT_SIZE(4*NUM_PANELS) + JSON_ARRAY_SIZE(NUM_PANELS) + 60;
 	StaticJsonDocument<capacity> root;
 	JsonArray arr = root.to<JsonArray>();
 	for(int i = 0; i < NUM_PANELS; i++) {
 		JsonObject panel = arr.createNestedObject();
 		panel["id"] = i;
 		panel["hue"] = panels[i]->getHue();
+		panel["saturation"] = panels[i]->getSat();
+		panel["brightness"] = panels[i]->getBrightness();
 	}
 
 	String output;

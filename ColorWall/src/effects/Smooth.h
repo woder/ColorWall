@@ -1,25 +1,25 @@
 /*
- * Bpm.h
+ * Smooth.h
  *
  *  Created on: Jan. 24, 2021
  *      Author: raphael
  */
 
-#ifndef EFFECTS_BPM_H_
-#define EFFECTS_BPM_H_
+#ifndef EFFECTS_SMOOTH_H_
+#define EFFECTS_SMOOTH_H_
 
 #include "Effect.h"
 
-#define DEFAULT_BPM 62
+#define DEFAULT_SPEED 2
+#define DEFAULT_WIDTH 10
 
-class Bpm : public Effect {
+class Smooth : public Effect {
 	private:
 		Panel** panels;
 		CRGB* leds;
-		uint8_t gHue = 0;
 	public:
-		Bpm(Panel** panels, CRGB* leds, EffectSettings& set);
-		~Bpm(){}
+		Smooth(Panel** panels, CRGB* leds, EffectSettings& set);
+		~Smooth(){}
 		void run();
 		static void updateSettings(DynamicJsonDocument& root, EffectSettings& set);
 		static void setDefaults(EffectSettings& settings);
@@ -28,4 +28,4 @@ class Bpm : public Effect {
 
 
 
-#endif /* EFFECTS_BPM_H_ */
+#endif /* EFFECTS_SMOOTH_H_ */

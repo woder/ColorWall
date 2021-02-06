@@ -60,7 +60,12 @@ void Panel::drawAABar(int pos16, int width, uint8_t hue, uint8_t brightness) {
 			bright = brightness;
 		}
 
-		this->leds[b] += CHSV(hue, 255, bright);
+		// kind of a hack to prevent the AA logic from turning LEDs on while the brightness is 0
+		if(brightness < 3) {
+			bright = brightness;
+		}
+
+		this->leds[b] += CHSV(hue, sat, bright);
 		b++;
 		if(b == (getLEDNum()+startNum)) {
 			b = startNum;

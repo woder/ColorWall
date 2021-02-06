@@ -1,26 +1,26 @@
 /*
- * Smooth.h
+ * Bpm.h
  *
  *  Created on: Jan. 24, 2021
  *      Author: raphael
  */
 
-#ifndef EFFECTS_SMOOTH_H_
-#define EFFECTS_SMOOTH_H_
+#ifndef EFFECTS_BPM_H_
+#define EFFECTS_BPM_H_
 
 #include "Effect.h"
-#include <ArduinoJson.h>
 
-#define DEFAULT_SPEED 2
-#define DEFAULT_WIDTH 10
+#define DEFAULT_BPM 62
+#define DEFAULT_STYLE 0
 
-class Smooth : public Effect {
+class Bpm : public Effect {
 	private:
 		Panel** panels;
 		CRGB* leds;
+		uint8_t gHue = 0;
 	public:
-		Smooth(Panel** panels, CRGB* leds, EffectSettings& set);
-		~Smooth(){}
+		Bpm(Panel** panels, CRGB* leds, EffectSettings& set);
+		~Bpm(){}
 		void run();
 		static void updateSettings(DynamicJsonDocument& root, EffectSettings& set);
 		static void setDefaults(EffectSettings& settings);
@@ -29,4 +29,4 @@ class Smooth : public Effect {
 
 
 
-#endif /* EFFECTS_SMOOTH_H_ */
+#endif /* EFFECTS_BPM_H_ */

@@ -31,11 +31,11 @@ void Settings::loadSettings() {
 	}
 
 	settings.panelNum = loaded.panelNum;
+	settings.powered = loaded.powered;
+	settings.brightness = loaded.brightness;
 	settings.currentEffect = loaded.currentEffect;
 	memcpy(effectStorage, loaded.effects, sizeof(loaded.effects));
 	memcpy(panelStorage, loaded.panels, sizeof(loaded.panels));
-//	effectStorage = loaded.effects;
-//	panelStorage = loaded.panels;
 
 	//if the second stored effect's ID is not 1 then the values are wrong and must be initialized
 	if(settings.effects.at(1).effectId != 1) {
@@ -52,12 +52,12 @@ void Settings::saveSettings() {
 
 	saved.version = settings.version;
 	saved.panelNum = settings.panelNum;
+	saved.powered = settings.powered;
+	saved.brightness = settings.brightness;
 	saved.currentEffect = settings.currentEffect;
 	saved.effectSize = settings.effects.max_size();
 	memcpy(saved.effects, effectStorage, sizeof(effectStorage));
-//	saved.effects = settings.effects.data();
 	saved.panelsSize = settings.panels.max_size();
-//	saved.panels = settings.panels.data();
 	memcpy(saved.panels, panelStorage, sizeof(panelStorage));
 
 	EEPROM.put(addr, saved);

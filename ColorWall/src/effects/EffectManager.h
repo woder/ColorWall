@@ -16,6 +16,7 @@
 #include "Wash.h"
 #include "Bpm.h"
 #include "Colory.h"
+#include "Rainbow.h"
 
 class EffectManager {
 	public:

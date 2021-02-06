@@ -12,9 +12,9 @@
 
 #include <FastLED.h>
 #include "Effects.h"
-#include "../Panel.h"
+#include "../../Panel.h"
 #include <ArduinoJson.h>
-#include "../UserSettings.h"
+#include "../../UserSettings.h"
 
 class Effect {
 	protected:

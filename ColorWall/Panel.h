@@ -19,6 +19,7 @@ class Panel {
     CRGB* leds;
     uint32_t currentPixel = 0;
     uint8_t hue = 0;
+    uint8_t sat = 255;
     uint8_t brightness = 255;
 
 
@@ -56,6 +57,14 @@ class Panel {
 
 	void setBrightness(uint8_t brightness = 255) {
 		this->brightness = brightness;
+	}
+
+	uint8_t getSat() const {
+		return sat;
+	}
+
+	void setSat(uint8_t sat = 255) {
+		this->sat = sat;
 	}
 };
 

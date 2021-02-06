@@ -15,7 +15,7 @@ Solid::Solid(Panel** panels, CRGB* leds){
 void Solid::run(){
 	for(int i = 0; i < NUM_PANELS; i++) {
 		CRGB solid;
-		CHSV hsv(panels[i]->getHue(), 255, 255);
+		CHSV hsv(panels[i]->getHue(), panels[i]->getSat(), panels[i]->getBrightness());
 		hsv2rgb_rainbow(hsv, solid);
 		panels[i]->setSolid(solid);
 	}
