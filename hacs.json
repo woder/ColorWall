@@ -1,0 +1,8 @@
+{
+  "name": "ColorWall",
+  "country": "CA",
+  "domains": ["light"],
+  "homeassistant": "0.99.9",
+  "iot_class": ["Local Polling"],
+  "render_readme": true
+}
