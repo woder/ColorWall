@@ -58,7 +58,7 @@ void setup() {
   Serial.println("WiFi connected");
   Serial.println("Device Started");
   Serial.println("-------------------------------------");
-  Serial.println("Running DHT!");
+  Serial.println("Running ColorWall!");
   Serial.println("-------------------------------------");
 
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
@@ -66,19 +66,20 @@ void setup() {
   int ledNum = NUM_PANELS * NUM_LEDS_PER_PANEL;
   FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, ledNum).setCorrection(TypicalLEDStrip);
 
-  Vector<PanelSettings> panelSettings = settings.getPanels();
-
-  int start = 0;
-  for(int i = 0; i < NUM_PANELS; i++) {
-	  panels[i] = new Panel(DATA_PIN, start, start+NUM_LEDS_PER_PANEL, leds);
-	  panels[i]->setHue(panelSettings.at(i).hue);
-	  panelSettings.at(i).panelId = i;
-	  start += NUM_LEDS_PER_PANEL;
-  }
-
   //load the settings
   settings.loadSettings();
   setEffect(settings.getCurrentEffect());
+
+  int start = 0;
+  for(int i = 0; i < NUM_PANELS; i++) {
+	  PanelSettings *p = &settings.getPanels().at(i);
+	  panels[i] = new Panel(DATA_PIN, start, start+NUM_LEDS_PER_PANEL, leds);
+	  panels[i]->setHue(p->hue);
+	  panels[i]->setBrightness(p->brightness);
+	  panels[i]->setSat(p->sat);
+	  p->panelId = i;
+	  start += NUM_LEDS_PER_PANEL;
+  }
 
   // set master brightness control
   FastLED.setBrightness(settings.getBrightness());

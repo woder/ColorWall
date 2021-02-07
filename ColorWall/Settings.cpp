@@ -9,7 +9,7 @@
 Settings::Settings() {
 	//calculate the size of our settings using the maximums specified in the header file
 	//!!!!  this is critical for settings to work correctly! "size" must be exactly the correct number of bytes used by the structs or it won't work
-	unsigned int size = 5 + (MAX_EFFECTS*8) + (MAX_PANELS*3);
+	unsigned int size = 6 + (MAX_EFFECTS*8) + (MAX_PANELS*4);
 	EEPROM.begin(size);
 
 	settings.effects.setStorage(effectStorage, MAX_EFFECTS);
@@ -31,7 +31,11 @@ void Settings::loadSettings() {
 	}
 
 	settings.panelNum = loaded.panelNum;
-	settings.powered = loaded.powered;
+	if(loaded.powered == 1) {
+		settings.powered = true;
+	} else {
+		settings.powered = false;
+	}
 	settings.brightness = loaded.brightness;
 	settings.currentEffect = loaded.currentEffect;
 	memcpy(effectStorage, loaded.effects, sizeof(loaded.effects));
@@ -52,12 +56,15 @@ void Settings::saveSettings() {
 
 	saved.version = settings.version;
 	saved.panelNum = settings.panelNum;
+	if(settings.powered) {
+		saved.powered = 1;
+	} else {
+		saved.powered = 0;
+	}
 	saved.powered = settings.powered;
 	saved.brightness = settings.brightness;
 	saved.currentEffect = settings.currentEffect;
-	saved.effectSize = settings.effects.max_size();
 	memcpy(saved.effects, effectStorage, sizeof(effectStorage));
-	saved.panelsSize = settings.panels.max_size();
 	memcpy(saved.panels, panelStorage, sizeof(panelStorage));
 
 	EEPROM.put(addr, saved);

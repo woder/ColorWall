@@ -27,12 +27,10 @@ class Settings {
 		struct StoredSettings {
 			uint16_t version;
 			uint8_t panelNum;
-			bool powered;
+			uint8_t powered;  // some weird stuff with the "bool" type, so we use an int instead
 			uint8_t brightness;
 			uint8_t currentEffect;
-			uint8_t effectSize = MAX_EFFECTS;
 			EffectSettings effects[MAX_EFFECTS];
-			uint8_t panelsSize = MAX_PANELS;
 			PanelSettings panels[MAX_PANELS];
 
 	};
